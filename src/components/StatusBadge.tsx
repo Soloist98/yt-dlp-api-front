@@ -5,12 +5,13 @@ import { cn } from '../utils/cn';
 interface StatusBadgeProps {
   status: 'pending' | 'completed' | 'failed';
   className?: string;
+  compact?: boolean;
 }
 
 /**
  * Status badge component with liquid animations
  */
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className, compact = false }) => {
   const statusConfig = {
     pending: {
       label: '下载中',
@@ -34,7 +35,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) =
   return (
     <motion.div
       className={cn(
-        'inline-flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-sm text-sm font-medium',
+        'inline-flex items-center gap-1.5 rounded-full border backdrop-blur-sm font-medium',
+        compact ? 'px-2.5 py-1 text-xs' : 'px-4 py-2 text-sm gap-2',
         config.color,
         className
       )}
@@ -42,7 +44,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) =
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
-      <span className="text-base">{config.icon}</span>
+      <span className={compact ? 'text-sm' : 'text-base'}>{config.icon}</span>
       <span>{config.label}</span>
     </motion.div>
   );

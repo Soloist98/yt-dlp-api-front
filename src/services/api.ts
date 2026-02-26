@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import type { Task, ApiResponse, DownloadRequest, BatchDownloadRequest } from '../types/task';
+import type { Task, ApiResponse, DownloadRequest, BatchDownloadRequest, TaskListResponse, TaskFilters } from '../types/task';
 
 /**
  * API Service class following SOLID principles
@@ -64,11 +64,26 @@ class ApiService {
   }
 
   /**
-   * List all tasks
+   * List all tasks with filters, pagination and sorting (by timestamp)
    */
-  async listTasks(): Promise<Task[]> {
-    const response = await this.client.get<ApiResponse<Task[]>>('/tasks');
-    return response.data.data || [];
+  async listTasks(filters?: TaskFilters): Promise<TaskListResponse> {
+    const params: Record<string, any> = {};
+
+    if (filters?.status) {
+      params.status = filters.status;
+    }
+    if (filters?.page) {
+      params.page = filters.page;
+    }
+    if (filters?.page_size) {
+      params.page_size = filters.page_size;
+    }
+    if (filters?.order) {
+      params.order = filters.order;
+    }
+
+    const response = await this.client.get<TaskListResponse>('/tasks', { params });
+    return response.data;
   }
 
   /**

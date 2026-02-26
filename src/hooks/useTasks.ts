@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
-import type { Task, DownloadRequest, TaskFilters } from '../types/task';
+import type { Task, DownloadRequest, TaskFilters, PaginationInfo } from '../types/task';
 
 /**
  * Custom hook for task management
@@ -9,9 +9,9 @@ import type { Task, DownloadRequest, TaskFilters } from '../types/task';
 export const useTasks = (filters?: TaskFilters) => {
   const queryClient = useQueryClient();
 
-  // Fetch all tasks with auto-refresh
+  // Fetch tasks with filters, pagination and sorting
   const {
-    data: tasks = [],
+    data,
     isLoading,
     error,
     refetch,
@@ -19,30 +19,35 @@ export const useTasks = (filters?: TaskFilters) => {
   } = useQuery({
     queryKey: ['tasks', filters],
     queryFn: async () => {
-      const allTasks = await apiService.listTasks();
+      // 构建后端查询参数
+      const backendFilters: TaskFilters = {
+        status: filters?.status,
+        page: filters?.page || 1,
+        page_size: filters?.page_size || 100,
+        order: filters?.order || 'desc',
+      };
 
-      // Apply filters
-      let filtered = allTasks;
+      const response = await apiService.listTasks(backendFilters);
+      let tasks = response.data || [];
 
-      if (filters?.status) {
-        filtered = filtered.filter((task) => task.status === filters.status);
-      }
-
+      // 前端搜索过滤（保持原有功能）
       if (filters?.search) {
         const searchLower = filters.search.toLowerCase();
-        filtered = filtered.filter(
+        tasks = tasks.filter(
           (task) =>
             task.url.toLowerCase().includes(searchLower) ||
             task.video_title?.toLowerCase().includes(searchLower)
         );
       }
 
-      // Sort by timestamp (newest first)
-      return filtered.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
+      return {
+        tasks,
+        pagination: response.pagination,
+      };
     },
     refetchInterval: 60000, // Auto-refresh every 60 seconds (1 minute)
+    placeholderData: (previousData) => previousData, // Keep previous data while fetching
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
   // Submit download mutation
@@ -62,7 +67,8 @@ export const useTasks = (filters?: TaskFilters) => {
   });
 
   return {
-    tasks,
+    tasks: data?.tasks || [],
+    pagination: data?.pagination,
     isLoading,
     isFetching,
     error,

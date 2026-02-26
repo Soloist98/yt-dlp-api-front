@@ -20,8 +20,12 @@ const queryClient = new QueryClient({
  * Main App component
  */
 function AppContent() {
-  const [filters, setFilters] = useState<TaskFilters>({});
-  const { tasks, isLoading, isFetching, refetch, submitDownload, retryTask, isSubmitting, isRetrying } = useTasks(filters);
+  const [filters, setFilters] = useState<TaskFilters>({
+    page: 1,
+    page_size: 20,
+    order: 'desc',
+  });
+  const { tasks, pagination, isLoading, isFetching, refetch, submitDownload, retryTask, isSubmitting, isRetrying } = useTasks(filters);
 
   const handleSubmitDownload = (url: string) => {
     submitDownload({ url });
@@ -29,6 +33,29 @@ function AppContent() {
 
   const handleRefresh = () => {
     refetch();
+  };
+
+  const handleFilterChange = (status?: TaskFilters['status'], search?: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      status,
+      search,
+      page: 1, // Reset to first page when filters change
+    }));
+  };
+
+  const handlePageChange = (page: number) => {
+    setFilters((prev) => ({ ...prev, page }));
+    // Scroll to top of task list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePageSizeChange = (page_size: number) => {
+    setFilters((prev) => ({
+      ...prev,
+      page_size,
+      page: 1, // Reset to first page when page size changes
+    }));
   };
 
   return (
@@ -61,7 +88,17 @@ function AppContent() {
                 />
               </div>
             ) : (
-              <TaskList tasks={tasks} onRetry={retryTask} isRetrying={isRetrying} onRefresh={handleRefresh} isRefreshing={isFetching} />
+              <TaskList
+                tasks={tasks}
+                pagination={pagination}
+                onRetry={retryTask}
+                isRetrying={isRetrying}
+                onRefresh={handleRefresh}
+                isRefreshing={isFetching}
+                onFilterChange={handleFilterChange}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
             )}
           </motion.div>
         </div>

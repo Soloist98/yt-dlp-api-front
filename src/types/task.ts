@@ -15,7 +15,8 @@ export interface Task {
   status: TaskStatus;
   result: string | null;
   error: string | null;
-  timestamp: string;
+  create_time: string;
+  update_time: string;
 }
 
 /**
@@ -50,4 +51,26 @@ export interface BatchDownloadRequest {
 export interface TaskFilters {
   status?: TaskStatus;
   search?: string;
+  page?: number;
+  page_size?: number;
+  order?: 'asc' | 'desc';
+}
+
+/**
+ * Pagination info
+ */
+export interface PaginationInfo {
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+}
+
+/**
+ * Task list response
+ */
+export interface TaskListResponse {
+  status: 'success' | 'error';
+  data: Task[];
+  pagination: PaginationInfo;
 }

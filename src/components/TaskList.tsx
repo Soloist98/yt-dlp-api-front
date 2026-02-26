@@ -1,84 +1,82 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { TaskCard } from './TaskCard';
 import { FilterBar } from './FilterBar';
-import { Task, TaskFilters } from '../types/task';
+import { Pagination } from './Pagination';
+import { Task, TaskFilters, PaginationInfo } from '../types/task';
 import { cn } from '../utils/cn';
 
 interface TaskListProps {
   tasks: Task[];
+  pagination?: PaginationInfo;
   onRetry: (task: Task) => void;
   isRetrying: boolean;
   onRefresh: () => void;
   isRefreshing: boolean;
+  onFilterChange: (status?: TaskFilters['status'], search?: string) => void;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
 /**
- * Task list component with pagination and filtering
+ * Task list component with backend pagination and filtering
  */
-export const TaskList: React.FC<TaskListProps> = ({ tasks, onRetry, isRetrying, onRefresh, isRefreshing }) => {
-  const [filters, setFilters] = useState<TaskFilters>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
-
-  const handleFilterChange = (status?: TaskFilters['status'], search?: string) => {
-    setFilters({ status, search });
-    setCurrentPage(1);
-  };
-
-  // Apply filters
-  const filteredTasks = tasks.filter((task) => {
-    if (filters.status && task.status !== filters.status) return false;
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      return (
-        task.url.toLowerCase().includes(searchLower) ||
-        task.video_title?.toLowerCase().includes(searchLower)
-      );
-    }
-    return true;
-  });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedTasks = filteredTasks.slice(startIndex, startIndex + itemsPerPage);
-
+export const TaskList: React.FC<TaskListProps> = ({
+  tasks,
+  pagination,
+  onRetry,
+  isRetrying,
+  onRefresh,
+  isRefreshing,
+  onFilterChange,
+  onPageChange,
+  onPageSizeChange,
+}) => {
   return (
     <div className="space-y-6">
-      <FilterBar onFilterChange={handleFilterChange} />
+      <FilterBar onFilterChange={onFilterChange} />
 
-      {/* Task count */}
+      {/* Task count and refresh button */}
       <div className="flex items-center justify-between text-white/60">
-        <span>共 {filteredTasks.length} 个任务</span>
-        <div className="flex items-center gap-4">
-          {totalPages > 1 && (
-            <span>
-              第 {currentPage} / {totalPages} 页
-            </span>
+        <span>
+          {pagination ? (
+            <>
+              显示 <span className="text-white font-medium">{tasks.length}</span> 条，
+              共 <span className="text-white font-medium">{pagination.total}</span> 条任务
+            </>
+          ) : (
+            `共 ${tasks.length} 个任务`
           )}
-          <button
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-xl glass transition-all duration-300',
-              isRefreshing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10 hover:scale-105 active:scale-95'
-            )}
-            title="刷新任务列表"
+        </span>
+        <button
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          className={cn(
+            'flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl border border-white/10 transition-all duration-300',
+            isRefreshing
+              ? 'opacity-50 cursor-not-allowed bg-white/5'
+              : 'bg-white/5 hover:bg-white/10 hover:scale-105 active:scale-95'
+          )}
+          title="刷新任务列表"
+        >
+          <motion.span
+            className="text-lg"
+            animate={isRefreshing ? { rotate: 360 } : {}}
+            transition={isRefreshing ? { duration: 1, repeat: Infinity, ease: 'linear' } : {}}
           >
-            <span className={cn('text-lg', isRefreshing && 'animate-spin')}>🔄</span>
-            <span>刷新</span>
-          </button>
-        </div>
+            🔄
+          </motion.span>
+          <span>刷新</span>
+        </button>
       </div>
 
       {/* Task grid */}
-      {paginatedTasks.length > 0 ? (
+      {tasks.length > 0 ? (
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           layout
         >
-          {paginatedTasks.map((task, index) => (
+          {tasks.map((task, index) => (
             <motion.div
               key={task.id}
               initial={{ opacity: 0, y: 20 }}
@@ -102,45 +100,12 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onRetry, isRetrying, 
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 pt-4">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className={cn(
-              'px-4 py-2 rounded-xl glass transition-all duration-300',
-              currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10 hover:scale-105 active:scale-95'
-            )}
-          >
-            上一页
-          </button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={cn(
-                'px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95',
-                page === currentPage
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                  : 'glass hover:bg-white/10 text-white/80'
-              )}
-            >
-              {page}
-            </button>
-          ))}
-
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className={cn(
-              'px-4 py-2 rounded-xl glass transition-all duration-300',
-              currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10 hover:scale-105 active:scale-95'
-            )}
-          >
-            下一页
-          </button>
-        </div>
+      {pagination && pagination.total > 0 && (
+        <Pagination
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
       )}
     </div>
   );
