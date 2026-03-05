@@ -66,6 +66,17 @@ export const useTasks = (filters?: TaskFilters) => {
     },
   });
 
+  // Batch retry tasks mutation
+  const batchRetryTasks = useMutation({
+    mutationFn: (tasks: Task[]) => {
+      const taskRequests = tasks.map(task => ({ url: task.url }));
+      return apiService.submitBatchDownload({ tasks: taskRequests });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
   return {
     tasks: data?.tasks || [],
     pagination: data?.pagination,
@@ -77,5 +88,7 @@ export const useTasks = (filters?: TaskFilters) => {
     retryTask: retryTask.mutate,
     isSubmitting: submitDownload.isPending,
     isRetrying: retryTask.isPending,
+    batchRetryTasks: batchRetryTasks.mutate,
+    isBatchRetrying: batchRetryTasks.isPending,
   };
 };
