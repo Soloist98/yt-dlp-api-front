@@ -126,30 +126,21 @@ export const HomePage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
         >
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <motion.div
-                className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              />
-            </div>
-          ) : (
-            <TaskList
-              tasks={tasks}
-              pagination={pagination}
-              onRetry={retryTask}
-              isRetrying={isRetrying}
-              onRefresh={handleRefresh}
-              isRefreshing={isFetching}
-              onFilterChange={handleFilterChange}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onBatchRetry={handleBatchRetry}
-              isBatchRetrying={isBatchRetrying}
-              activeFilter={activeFilter}
-            />
-          )}
+          <TaskList
+            tasks={tasks}
+            pagination={pagination}
+            onRetry={retryTask}
+            isRetrying={isRetrying}
+            onRefresh={handleRefresh}
+            isRefreshing={isFetching}
+            onFilterChange={handleFilterChange}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onBatchRetry={handleBatchRetry}
+            isBatchRetrying={isBatchRetrying}
+            activeFilter={activeFilter}
+            isLoading={isLoading || isFetching}
+          />
         </motion.div>
       </div>
 
