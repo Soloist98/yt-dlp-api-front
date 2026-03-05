@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { TaskCard } from './TaskCard';
 import { FilterBar } from './FilterBar';
 import { Pagination } from './Pagination';
+import { BatchRetryButton } from './BatchRetryButton';
 import { Task, TaskFilters, PaginationInfo } from '../types/task';
 import { cn } from '../utils/cn';
 
@@ -16,6 +17,9 @@ interface TaskListProps {
   onFilterChange: (status?: TaskFilters['status'], search?: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  onBatchRetry: (tasks: Task[]) => void;
+  isBatchRetrying: boolean;
+  activeFilter?: TaskFilters['status'] | 'all';
 }
 
 /**
@@ -31,10 +35,22 @@ export const TaskList: React.FC<TaskListProps> = ({
   onFilterChange,
   onPageChange,
   onPageSizeChange,
+  onBatchRetry,
+  isBatchRetrying,
+  activeFilter,
 }) => {
   return (
     <div className="space-y-6">
       <FilterBar onFilterChange={onFilterChange} />
+
+      {/* Batch retry button - only show for failed tasks */}
+      {activeFilter === 'failed' && tasks.length > 0 && (
+        <BatchRetryButton
+          tasks={tasks}
+          onBatchRetry={onBatchRetry}
+          isPending={isBatchRetrying}
+        />
+      )}
 
       {/* Task count and refresh button */}
       <div className="flex items-center justify-between text-white/60">
