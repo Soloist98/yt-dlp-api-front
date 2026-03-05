@@ -48,11 +48,11 @@ class ApiService {
    * Submit multiple download tasks
    */
   async submitBatchDownload(request: BatchDownloadRequest): Promise<{ task_ids: string[] }> {
-    const response = await this.client.post<ApiResponse<{ task_ids: string[] }>>(
+    const response = await this.client.post<{ status: string; task_ids: string[] }>(
       '/batch_download',
       request
     );
-    return response.data.data || { task_ids: [] };
+    return { task_ids: response.data.task_ids || [] };
   }
 
   /**
