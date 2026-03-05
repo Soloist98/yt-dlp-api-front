@@ -12,7 +12,7 @@ module.exports = function(app) {
       target: apiBaseUrl,
       changeOrigin: true,
       pathRewrite: {
-        '^/api': '',
+        '^/api': '', // Remove /api prefix since it's already in target URL
       },
       onError: (err, req, res) => {
         console.error('[Proxy Error]', err.message);
