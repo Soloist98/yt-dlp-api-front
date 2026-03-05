@@ -6,6 +6,7 @@ import { cn } from '../utils/cn';
 interface FilterBarProps {
   onFilterChange: (status?: TaskStatus, search?: string) => void;
   onActiveFilterChange?: (filter: TaskStatus | 'all') => void;
+  activeFilter?: TaskStatus | 'all';
 }
 
 /**
@@ -13,9 +14,9 @@ interface FilterBarProps {
  */
 export const FilterBar: React.FC<FilterBarProps> = ({
   onFilterChange,
-  onActiveFilterChange
+  onActiveFilterChange,
+  activeFilter = 'all',
 }) => {
-  const [activeFilter, setActiveFilter] = useState<TaskStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filters: Array<{ value: TaskStatus | 'all'; label: string; icon: string }> = [
@@ -26,7 +27,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   ];
 
   const handleFilterClick = (filter: TaskStatus | 'all') => {
-    setActiveFilter(filter);
     onFilterChange(filter === 'all' ? undefined : filter, searchQuery || undefined);
     onActiveFilterChange?.(filter);
   };

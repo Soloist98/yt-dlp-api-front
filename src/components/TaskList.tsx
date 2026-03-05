@@ -20,6 +20,7 @@ interface TaskListProps {
   onBatchRetry: (tasks: Task[]) => void;
   isBatchRetrying: boolean;
   activeFilter?: TaskFilters['status'] | 'all';
+  isLoading?: boolean;
 }
 
 /**
@@ -38,13 +39,14 @@ export const TaskList: React.FC<TaskListProps> = ({
   onBatchRetry,
   isBatchRetrying,
   activeFilter,
+  isLoading = false,
 }) => {
   return (
     <div className="space-y-6">
-      <FilterBar onFilterChange={onFilterChange} />
+      <FilterBar onFilterChange={onFilterChange} activeFilter={activeFilter} />
 
       {/* Batch retry button - only show for failed tasks */}
-      {activeFilter === 'failed' && tasks.length > 0 && (
+      {activeFilter === 'failed' && tasks.length > 0 && !isLoading && (
         <BatchRetryButton
           tasks={tasks}
           onBatchRetry={onBatchRetry}
@@ -86,8 +88,16 @@ export const TaskList: React.FC<TaskListProps> = ({
         </button>
       </div>
 
-      {/* Task grid */}
-      {tasks.length > 0 ? (
+      {/* Task grid or loading */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <motion.div
+            className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+        </div>
+      ) : tasks.length > 0 ? (
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           layout
@@ -116,7 +126,7 @@ export const TaskList: React.FC<TaskListProps> = ({
       )}
 
       {/* Pagination */}
-      {pagination && pagination.total > 0 && (
+      {pagination && pagination.total > 0 && !isLoading && (
         <Pagination
           pagination={pagination}
           onPageChange={onPageChange}
