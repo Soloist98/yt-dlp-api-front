@@ -46,8 +46,8 @@ export const useTasks = (filters?: TaskFilters) => {
       };
     },
     refetchInterval: 60000, // Auto-refresh every 60 seconds (1 minute)
-    placeholderData: (previousData) => previousData, // Keep previous data while fetching
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    staleTime: 0, // Always consider data stale, refetch on every filter change
+    gcTime: 0, // Don't cache data in memory
   });
 
   // Submit download mutation
