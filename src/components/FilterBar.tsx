@@ -5,12 +5,16 @@ import { cn } from '../utils/cn';
 
 interface FilterBarProps {
   onFilterChange: (status?: TaskStatus, search?: string) => void;
+  onActiveFilterChange?: (filter: TaskStatus | 'all') => void;
 }
 
 /**
  * Filter bar component for task filtering
  */
-export const FilterBar: React.FC<FilterBarProps> = ({ onFilterChange }) => {
+export const FilterBar: React.FC<FilterBarProps> = ({
+  onFilterChange,
+  onActiveFilterChange
+}) => {
   const [activeFilter, setActiveFilter] = useState<TaskStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -24,6 +28,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ onFilterChange }) => {
   const handleFilterClick = (filter: TaskStatus | 'all') => {
     setActiveFilter(filter);
     onFilterChange(filter === 'all' ? undefined : filter, searchQuery || undefined);
+    onActiveFilterChange?.(filter);
   };
 
   const handleSearchChange = (value: string) => {
