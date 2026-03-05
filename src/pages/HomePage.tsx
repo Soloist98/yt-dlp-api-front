@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import toast, { Toaster } from 'react-hot-toast';
 import { TaskList } from '../components/TaskList';
 import { useTasks } from '../hooks/useTasks';
-import { TaskFilters } from '../types/task';
+import { TaskFilters, Task } from '../types/task';
 
 /**
  * Home page - displays task list
@@ -13,7 +14,18 @@ export const HomePage: React.FC = () => {
     page_size: 20,
     order: 'desc',
   });
-  const { tasks, pagination, isLoading, isFetching, refetch, retryTask, isRetrying } = useTasks(filters);
+  const [activeFilter, setActiveFilter] = useState<TaskFilters['status'] | 'all'>('all');
+  const {
+    tasks,
+    pagination,
+    isLoading,
+    isFetching,
+    refetch,
+    retryTask,
+    isRetrying,
+    batchRetryTasks,
+    isBatchRetrying,
+  } = useTasks(filters);
 
   const handleRefresh = () => {
     refetch();
@@ -26,6 +38,7 @@ export const HomePage: React.FC = () => {
       search,
       page: 1, // Reset to first page when filters change
     }));
+    setActiveFilter(status || 'all');
   };
 
   const handlePageChange = (page: number) => {
@@ -42,8 +55,42 @@ export const HomePage: React.FC = () => {
     }));
   };
 
+  const handleBatchRetry = (tasks: Task[]) => {
+    batchRetryTasks(tasks, {
+      onSuccess: (data) => {
+        toast.success(`✓ 已提交 ${data.task_ids.length} 个任务重试`, {
+          duration: 3000,
+          position: 'top-center',
+          style: {
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            color: '#fff',
+            borderRadius: '1rem',
+            padding: '1rem 1.5rem',
+            fontSize: '1rem',
+            fontWeight: '500',
+          },
+        });
+      },
+      onError: () => {
+        toast.error('✕ 重试失败，请稍后再试', {
+          duration: 3000,
+          position: 'top-center',
+          style: {
+            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            color: '#fff',
+            borderRadius: '1rem',
+            padding: '1rem 1.5rem',
+            fontSize: '1rem',
+            fontWeight: '500',
+          },
+        });
+      },
+    });
+  };
+
   return (
     <div className="min-h-screen p-6 md:p-12 md:pl-32">
+      <Toaster />
       <div className="max-w-7xl mx-auto">
         {/* Page Header */}
         <motion.div
@@ -98,6 +145,9 @@ export const HomePage: React.FC = () => {
               onFilterChange={handleFilterChange}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
+              onBatchRetry={handleBatchRetry}
+              isBatchRetrying={isBatchRetrying}
+              activeFilter={activeFilter}
             />
           )}
         </motion.div>
