@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
-import { Navigation } from '../components/Navigation';
 import { TaskList } from '../components/TaskList';
 import { useTasks } from '../hooks/useTasks';
+import { useNavigation } from '../contexts/NavigationContext';
 import { TaskFilters, Task } from '../types/task';
 
 /**
  * Home page - displays task list
  */
 export const HomePage: React.FC = () => {
+  const { setShowBatchRetry, setOnBatchRetry, setIsBatchRetrying } = useNavigation();
   const [filters, setFilters] = useState<TaskFilters>({
     page: 1,
     page_size: 20,
@@ -27,8 +28,6 @@ export const HomePage: React.FC = () => {
     batchRetryTasks,
     isBatchRetrying,
   } = useTasks(filters);
-
-  const showBatchRetry = activeFilter === 'failed' && tasks.length > 0;
 
   const handleRefresh = () => {
     refetch();
@@ -58,7 +57,7 @@ export const HomePage: React.FC = () => {
     }));
   };
 
-  const handleBatchRetry = (tasks: Task[]) => {
+  const handleBatchRetry = useCallback((tasks: Task[]) => {
     batchRetryTasks(tasks, {
       onSuccess: (data) => {
         toast.success(`✓ 已提交 ${data.task_ids.length} 个任务重试`, {
@@ -89,15 +88,27 @@ export const HomePage: React.FC = () => {
         });
       },
     });
-  };
+  }, [batchRetryTasks]);
+
+  // Update navigation context when filter or tasks change
+  useEffect(() => {
+    const shouldShowBatchRetry = activeFilter === 'failed' && tasks.length > 0;
+    setShowBatchRetry(shouldShowBatchRetry);
+
+    if (shouldShowBatchRetry) {
+      setOnBatchRetry(() => handleBatchRetry(tasks));
+    } else {
+      setOnBatchRetry(undefined);
+    }
+  }, [activeFilter, tasks, setShowBatchRetry, setOnBatchRetry, handleBatchRetry]);
+
+  // Update batch retrying state
+  useEffect(() => {
+    setIsBatchRetrying(isBatchRetrying);
+  }, [isBatchRetrying, setIsBatchRetrying]);
 
   return (
     <>
-      <Navigation
-        showBatchRetry={showBatchRetry}
-        onBatchRetry={() => handleBatchRetry(tasks)}
-        isBatchRetrying={isBatchRetrying}
-      />
       <div className="min-h-screen pt-24 md:pt-28 p-6 md:p-12">
         <Toaster />
         <div className="max-w-7xl mx-auto">

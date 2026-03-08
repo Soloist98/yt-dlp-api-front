@@ -2,22 +2,14 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
-
-interface NavigationProps {
-  showBatchRetry?: boolean;
-  onBatchRetry?: () => void;
-  isBatchRetrying?: boolean;
-}
+import { useNavigation } from '../contexts/NavigationContext';
 
 /**
  * Navigation component with Liquid Design
  * Top horizontal navigation bar with glassmorphism
  */
-export const Navigation: React.FC<NavigationProps> = ({
-  showBatchRetry,
-  onBatchRetry,
-  isBatchRetrying,
-}) => {
+export const Navigation: React.FC = () => {
+  const { showBatchRetry, onBatchRetry, isBatchRetrying } = useNavigation();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
