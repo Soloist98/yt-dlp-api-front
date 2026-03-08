@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
+import { Navigation } from '../components/Navigation';
 import { TaskList } from '../components/TaskList';
 import { useTasks } from '../hooks/useTasks';
 import { TaskFilters, Task } from '../types/task';
@@ -26,6 +27,8 @@ export const HomePage: React.FC = () => {
     batchRetryTasks,
     isBatchRetrying,
   } = useTasks(filters);
+
+  const showBatchRetry = activeFilter === 'failed' && tasks.length > 0;
 
   const handleRefresh = () => {
     refetch();
@@ -89,59 +92,66 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 md:p-12 md:pl-32">
-      <Toaster />
-      <div className="max-w-7xl mx-auto">
-        {/* Page Header */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <motion.h1
-            className="text-5xl md:text-6xl font-bold mb-4 text-gradient"
-            animate={{
-              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-            style={{
-              backgroundSize: '200% 200%',
-            }}
+    <>
+      <Navigation
+        showBatchRetry={showBatchRetry}
+        onBatchRetry={() => handleBatchRetry(tasks)}
+        isBatchRetrying={isBatchRetrying}
+      />
+      <div className="min-h-screen pt-24 md:pt-28 p-6 md:p-12">
+        <Toaster />
+        <div className="max-w-7xl mx-auto">
+          {/* Page Header */}
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
           >
-            下载任务
-          </motion.h1>
-          <p className="text-xl text-white/60">
-            {pagination ? `共 ${pagination.total} 个任务` : '管理你的下载任务'}
-          </p>
-        </motion.div>
+            <motion.h1
+              className="text-5xl md:text-6xl font-bold mb-4 text-gradient"
+              animate={{
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: 'linear',
+              }}
+              style={{
+                backgroundSize: '200% 200%',
+              }}
+            >
+              下载任务
+            </motion.h1>
+            <p className="text-xl text-white/60">
+              {pagination ? `共 ${pagination.total} 个任务` : '管理你的下载任务'}
+            </p>
+          </motion.div>
 
-        {/* Task List */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-        >
-          <TaskList
-            tasks={tasks}
-            pagination={pagination}
-            onRetry={retryTask}
-            isRetrying={isRetrying}
-            onRefresh={handleRefresh}
-            isRefreshing={isFetching}
-            onFilterChange={handleFilterChange}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onBatchRetry={handleBatchRetry}
-            isBatchRetrying={isBatchRetrying}
-            activeFilter={activeFilter}
-            isLoading={isLoading || isFetching}
-          />
-        </motion.div>
+          {/* Task List */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+          >
+            <TaskList
+              tasks={tasks}
+              pagination={pagination}
+              onRetry={retryTask}
+              isRetrying={isRetrying}
+              onRefresh={handleRefresh}
+              isRefreshing={isFetching}
+              onFilterChange={handleFilterChange}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              onBatchRetry={handleBatchRetry}
+              isBatchRetrying={isBatchRetrying}
+              activeFilter={activeFilter}
+              isLoading={isLoading || isFetching}
+            />
+          </motion.div>
+        </div>
       </div>
 
       {/* Floating decorative elements */}
@@ -169,6 +179,6 @@ export const HomePage: React.FC = () => {
           ease: 'easeInOut',
         }}
       />
-    </div>
+    </>
   );
 };
