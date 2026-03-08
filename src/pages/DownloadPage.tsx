@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Navigation } from '../components/Navigation';
 import { DownloadForm } from '../components/DownloadForm';
 import { useTasks } from '../hooks/useTasks';
 
@@ -23,7 +24,9 @@ export const DownloadPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 md:p-12 md:pl-32">
+    <>
+      <Navigation />
+      <div className="min-h-screen pt-24 md:pt-28 p-6 md:p-12">
       <div className="max-w-4xl mx-auto">
         {/* Page Header */}
         <motion.div
@@ -120,5 +123,6 @@ export const DownloadPage: React.FC = () => {
         }}
       />
     </div>
+    </>
   );
 };
